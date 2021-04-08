@@ -1,0 +1,38 @@
+type: update
+name: Change LE Base URL
+
+targetNodes: any
+
+settings:
+  fields:
+    - type: string
+      caption: Base URL
+      name: baseUrl
+      placeholder: https://raw.githubusercontent.com/jelastic-jps/lets-encrypt/stage
+      
+onInstall:
+  envName: ${env.name}
+  nodeGroup: ${targetNodes.nodeGroup}
+  baseUrl: ${settings.baseUrl:}
+  script: |
+    var baseUrl = String(getParam("baseUrl")) || "https://raw.githubusercontent.com/jelastic-jps/lets-encrypt/stage";
+    var scriptName = envName + "-" + nodeGroup + "-letsencrypt-ssl";
+
+    var resp = api.dev.scripting.GetScript(scriptName);
+    if (resp.result != 0) return resp;
+
+    var scriptBody = String(resp.script.code);
+
+    scriptBody = scriptBody.replace(/baseUrl = ".*?"/, 'baseUrl = "' + baseUrl + '"');
+
+    if (scriptBody.indexOf(baseUrl) == -1) {
+        return {        
+            type: "error",
+            message: "test failed: new baseUrl not found in " + scriptName
+        };
+    }
+
+    resp = api.dev.scripting.ChangeScript(scriptName, "code", scriptBody);
+    if (resp.result != 0) return resp;
+
+    return api.dev.scripting.Build(scriptName);
