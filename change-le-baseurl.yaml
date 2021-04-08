@@ -7,13 +7,13 @@ settings:
   fields:
     - type: string
       caption: Base URL
-      name: baseUrl
+      name: baseURL
       placeholder: https://raw.githubusercontent.com/jelastic-jps/lets-encrypt/stage
       
 onInstall:
   envName: ${env.name}
   nodeGroup: ${targetNodes.nodeGroup}
-  baseUrl: ${settings.baseUrl:}
+  baseUrl: ${settings.baseURL:}
   script: |
     var baseUrl = String(getParam("baseUrl")) || "https://raw.githubusercontent.com/jelastic-jps/lets-encrypt/stage";
     var scriptName = envName + "-" + nodeGroup + "-letsencrypt-ssl";
